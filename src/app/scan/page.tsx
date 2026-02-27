@@ -14,10 +14,16 @@ export default function ParticipantScan() {
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        // Grab token from local storage (or from profile endpoint if we need to guarantee it's fresh)
-        // But local storage is faster.
+        // Grab token from local storage
         const storedToken = localStorage.getItem('summit_participant_token');
         if (storedToken) setToken(storedToken);
+
+        // Check if we arrived here via a QR scan from an external camera
+        const urlParams = new URLSearchParams(window.location.search);
+        const vendorTokenFromUrl = urlParams.get('vendor_token');
+        if (vendorTokenFromUrl) {
+            handleDecode(vendorTokenFromUrl);
+        }
     }, []);
 
     const handleDecode = async (result: string) => {
@@ -28,15 +34,29 @@ export default function ParticipantScan() {
         setSuccess(false);
 
         try {
-            // If the code is JSON {"vendor_token": "..."}, parse it. otherwise use raw string.
             let tokenToScan = result;
-            try {
-                const parsed = JSON.parse(result);
-                if (parsed.vendor_token) {
-                    tokenToScan = parsed.vendor_token;
+
+            // Handle URL format: https://.../scan?vendor_token=ABC
+            if (result.includes('vendor_token=')) {
+                try {
+                    const url = new URL(result);
+                    const param = url.searchParams.get('vendor_token');
+                    if (param) tokenToScan = param;
+                } catch (e) {
+                    // Fallback for partial URL strings
+                    const match = result.match(/vendor_token=([^&]+)/);
+                    if (match) tokenToScan = match[1];
                 }
-            } catch (e) {
-                // Not a JSON string, use the raw result
+            } else {
+                // If the code is JSON {"vendor_token": "..."}, parse it.
+                try {
+                    const parsed = JSON.parse(result);
+                    if (parsed.vendor_token) {
+                        tokenToScan = parsed.vendor_token;
+                    }
+                } catch (e) {
+                    // Not a JSON string, use the raw result
+                }
             }
 
             const res = await api.post('/meals/scan', { vendor_token: tokenToScan });

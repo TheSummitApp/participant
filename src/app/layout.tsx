@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import FloatingNotes from "@/components/FloatingNotes";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PwaPrompt from "@/components/PwaPrompt";
 
@@ -43,6 +44,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className="antialiased font-sans flex flex-col min-h-screen bg-background text-foreground pb-20 pt-safe">
         <ThemeProvider>
+          {/* Floating Action Button */}
+          <FloatingNotes />
+
           {/* Main Content Area */}
           <main className="flex-1 w-full max-w-lg mx-auto relative">{children}</main>
 

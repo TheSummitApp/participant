@@ -91,7 +91,7 @@ export default function VendorDashboard({ params }: { params: Promise<{ token: s
 
                     <div className="inline-block p-4 bg-white border-2 border-slate-100 rounded-3xl shadow-sm mb-4">
                         <QRCode
-                            value={vendor.token}
+                            value={`${process.env.NEXT_PUBLIC_PARTICIPANT_APP_URL || window.location.origin}/scan?vendor_token=${vendor.token}`}
                             size={200}
                             bgColor={"#ffffff"}
                             fgColor={"#002855"}
