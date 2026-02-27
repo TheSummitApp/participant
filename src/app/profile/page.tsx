@@ -1,12 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import api from "@/lib/api";
-import { User as UserIcon, MapPin, Loader2, Link as LinkIcon, Home, CheckCircle2 } from "lucide-react";
+import { User as UserIcon, MapPin, Loader2, Link as LinkIcon, Home, CheckCircle2, LogOut } from "lucide-react";
 import QRCode from "react-qr-code";
 
 export default function ParticipantProfile() {
+    const router = useRouter();
     const [user, setUser] = useState<{ first_name: string; last_name: string; stake: string; token: string; lodging_name?: string; lodging_room?: string; bed_label?: string; email: string; gender?: string; status: string } | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const handleLogout = () => {
+        localStorage.removeItem('summit_participant_token');
+        router.push('/login');
+    };
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -128,6 +135,14 @@ export default function ParticipantProfile() {
                     </div>
                 </div>
             </div>
+
+            <button
+                onClick={handleLogout}
+                className="w-full py-4 bg-rose-50 dark:bg-rose-900/10 text-rose-600 dark:text-rose-400 font-bold rounded-[2rem] border border-rose-200 dark:border-rose-900/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-rose-100 dark:hover:bg-rose-900/20"
+            >
+                <LogOut size={20} />
+                Log Out of YSA Guide
+            </button>
         </div>
     );
 }
