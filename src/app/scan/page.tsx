@@ -28,8 +28,18 @@ export default function ParticipantScan() {
         setSuccess(false);
 
         try {
-            // result should be the vendor token
-            const res = await api.post('/meals/scan', { vendor_token: result });
+            // If the code is JSON {"vendor_token": "..."}, parse it. otherwise use raw string.
+            let tokenToScan = result;
+            try {
+                const parsed = JSON.parse(result);
+                if (parsed.vendor_token) {
+                    tokenToScan = parsed.vendor_token;
+                }
+            } catch (e) {
+                // Not a JSON string, use the raw result
+            }
+
+            const res = await api.post('/meals/scan', { vendor_token: tokenToScan });
             setScannedVendor(res.data.vendor);
             setSlotData(res.data.slot);
         } catch (err: unknown) {
