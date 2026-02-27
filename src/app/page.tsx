@@ -3,22 +3,46 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
-import { Calendar, Utensils, Home as HomeIcon, MapPin, User, Sunrise, Moon, CloudSun, LogOut } from "lucide-react";
+import { Calendar, Utensils, Home as HomeIcon, MapPin, User, Sunrise, Moon, CloudSun, LogOut, Clock } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 
 export default function ParticipantDashboard() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [user, setUser] = useState<{ first_name: string; stake: string; lodging_room?: string; company_name?: string; lodging_name?: string; bed_label?: string } | null>(null);
+  const [user, setUser] = useState<{ first_name: string; stake: string; lodging_room?: string; company_name?: string; lodging_name?: string; bed_label?: string; summit_id?: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentEvent, setCurrentEvent] = useState<{ title: string; location: string; start_time: string; end_time: string } | null>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndItinerary = async () => {
       try {
         const res = await api.get('/participants/profile');
-        setUser(res.data);
-      } catch {
-        // If token is invalid or missing, go to login
+        const userData = res.data;
+        setUser(userData);
+
+        if (userData.summit_id) {
+          const itineraryRes = await api.get(`/itinerary/${userData.summit_id}`);
+          const items = itineraryRes.data || [];
+
+          const now = new Date();
+          const active = items.find((item: any) => {
+            const start = new Date(item.start_time);
+            const end = new Date(item.end_time);
+            return now >= start && now <= end;
+          });
+
+          if (active) {
+            setCurrentEvent(active);
+          } else {
+            // Find next upcoming if nothing is happening now
+            const next = items
+              .filter((item: any) => new Date(item.start_time) > now)
+              .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())[0];
+            if (next) setCurrentEvent({ ...next, isUpcoming: true });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
         localStorage.removeItem("summit_participant_token");
         router.push("/login");
       } finally {
@@ -30,7 +54,7 @@ export default function ParticipantDashboard() {
     if (!token) {
       router.push("/login");
     } else {
-      fetchProfile();
+      fetchProfileAndItinerary();
     }
   }, [router]);
 
@@ -87,6 +111,27 @@ export default function ParticipantDashboard() {
           </button>
         </div>
       </header>
+
+      {currentEvent && (
+        <div className="bg-primary text-primary-foreground p-6 rounded-[2rem] shadow-xl shadow-primary/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl pointer-events-none" />
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-2 w-2 rounded-full bg-white animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{(currentEvent as any).isUpcoming ? "Up Next" : "Happening Now"}</span>
+          </div>
+          <h2 className="text-xl font-bold mb-2 leading-tight">{currentEvent.title}</h2>
+          <div className="flex items-center gap-4 text-xs font-medium text-white/80">
+            <div className="flex items-center gap-1.5">
+              <Clock size={14} />
+              <span>{new Date(currentEvent.start_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <MapPin size={14} />
+              <span>{currentEvent.location || 'TBA'}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <Link href="/itinerary" className="bg-blue-500 text-white p-6 rounded-[2rem] flex flex-col justify-between shadow-lg shadow-blue-500/20 active:scale-95 transition-transform aspect-square relative overflow-hidden">

@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calendar, ScanLine, User, Bell, StickyNote } from 'lucide-react';
+import { Calendar, ScanLine, User, Bell, StickyNote, Home as HomeIcon } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,6 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 const navItems = [
+    { label: 'Home', href: '/', icon: HomeIcon },
     { label: 'Itinerary', href: '/itinerary', icon: Calendar },
     { label: 'Notes', href: '/notes', icon: StickyNote },
     { label: 'Scan', href: '/scan', icon: ScanLine, isCenter: true },
