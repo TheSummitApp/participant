@@ -37,7 +37,7 @@ export default function AutoLoginCallback({ params }: { params: Promise<{ token:
                 <>
                     <Loader2 className="w-12 h-12 text-[#002855] animate-spin mb-6 mx-auto" strokeWidth={1.5} />
                     <h1 className="text-xl font-bold text-slate-800 tracking-tight">Authenticating</h1>
-                    <p className="text-sm font-medium text-slate-500 mt-2">Connecting you to the YSA Summit...</p>
+                    <p className="text-sm font-medium text-slate-500 mt-2">Connecting you to the Summit...</p>
                 </>
             ) : (
                 <div className="bg-rose-50 border border-rose-100 p-6 rounded-2xl w-full max-w-sm">

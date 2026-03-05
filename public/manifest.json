@@ -1,7 +1,7 @@
 {
-    "name": "YSA Summit",
-    "short_name": "YSA Summit",
-    "description": "YSA Summit Participant Companion App",
+    "name": "Summit",
+    "short_name": "Summit",
+    "description": "Summit Participant Companion App",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#002855",

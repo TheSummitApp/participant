@@ -15,24 +15,48 @@ import { format } from 'date-fns';
 
 export default function VendorDashboard({ params }: { params: Promise<{ token: string }> }) {
     const { token } = use(params);
-    const [data, setData] = useState<{ vendor: { name: string; token: string }; schedule: { slot_id: string; meal_date: string; meal_type: string; served_count: number; meal_name?: string }[]; stats: { total_served: number; average_rating: number } } | null>(null);
+    const [data, setData] = useState<{
+        vendor: { id: string; name: string; token: string };
+        active_meal_id: string | null;
+        schedule: { meal_id: string; slot_id: string; meal_date: string; meal_type: string; served_count: number; meal_name?: string }[];
+        stats: { total_served: number; average_rating: number }
+    } | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const fetchDashboardData = async () => {
+        try {
+            const res = await api.get(`/vendors/dashboard/${token}`);
+            setData(res.data);
+        } catch (err: unknown) {
+            console.error(err);
+            setError((err as { response?: { data?: { error?: string } } }).response?.data?.error || "Failed to load dashboard.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const res = await api.get(`/vendors/dashboard/${token}`);
-                setData(res.data);
-            } catch (err: unknown) {
-                console.error(err);
-                setError((err as { response?: { data?: { error?: string } } }).response?.data?.error || "Failed to load dashboard.");
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchDashboardData();
+        // Set up polling for real-time updates every 15 seconds
+        const interval = setInterval(fetchDashboardData, 15000);
+        return () => clearInterval(interval);
     }, [token]);
+
+    const handleActivateMeal = async (mealId: string) => {
+        if (!data) return;
+        try {
+            const response = await api.post('/vendors/active-meal', {
+                vendor_id: data.vendor.id,
+                meal_id: mealId
+            });
+            if (response.data.success) {
+                await fetchDashboardData();
+            }
+        } catch (error) {
+            console.error("Failed to activate meal:", error);
+        }
+    };
 
     if (loading) {
         return (
@@ -116,32 +140,48 @@ export default function VendorDashboard({ params }: { params: Promise<{ token: s
                     ) : (
                         schedule.map((slot) => {
                             const dateObj = new Date(slot.meal_date);
-                            const isActive = new Date().toISOString().split('T')[0] === dateObj.toISOString().split('T')[0];
+                            const isActive = slot.meal_id === data.active_meal_id;
 
                             return (
-                                <div key={slot.slot_id} className={`bg-white rounded-2xl p-5 shadow-sm border ${isActive ? 'border-[#002855] ring-1 ring-[#002855]/20' : 'border-slate-100'}`}>
-                                    {isActive && (
-                                        <div className="mb-3">
-                                            <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded">Active Today</span>
-                                        </div>
-                                    )}
+                                <div key={slot.slot_id} className={`bg-white rounded-2xl p-5 shadow-sm border transition-all ${isActive ? 'border-red-400 ring-2 ring-red-500/10' : 'border-slate-100'}`}>
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
-                                            <h3 className="font-bold text-lg text-slate-900">{slot.meal_type}</h3>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="font-bold text-lg text-slate-900">{slot.meal_type}</h3>
+                                                {isActive && (
+                                                    <span className="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                                                        <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                                                        LIVE
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="text-sm text-slate-500 font-medium">
                                                 {format(dateObj, 'EEEE, MMM do')}
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-xl font-black text-slate-900">{slot.served_count}</div>
-                                            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Served</div>
-                                        </div>
+
+                                        <button
+                                            onClick={() => handleActivateMeal(slot.meal_id)}
+                                            disabled={isActive}
+                                            className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${isActive
+                                                ? 'bg-emerald-500 text-white cursor-default'
+                                                : 'bg-[#002855] text-white hover:bg-[#002855]/90 active:scale-95 shadow-md shadow-[#002855]/20'
+                                                }`}
+                                        >
+                                            {isActive ? 'Active' : 'Activate'}
+                                        </button>
                                     </div>
-                                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center gap-3">
-                                        <Utensils size={18} className="text-[#002855]" />
-                                        <span className="font-semibold text-slate-700 text-sm">
-                                            {slot.meal_name || "Standard Meal"}
-                                        </span>
+                                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <Utensils size={18} className="text-[#002855]" />
+                                            <span className="font-semibold text-slate-700 text-sm">
+                                                {slot.meal_name || "Standard Meal"}
+                                            </span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-sm font-black text-slate-900">{slot.served_count}</div>
+                                            <div className="text-[8px] uppercase font-bold text-slate-400 tracking-wider leading-none">Served</div>
+                                        </div>
                                     </div>
                                 </div>
                             );

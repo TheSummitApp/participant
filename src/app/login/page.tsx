@@ -40,7 +40,7 @@ export default function ParticipantLogin() {
                     <div className="w-16 h-16 bg-[#002855] text-white rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-[#002855]/20 rotate-3">
                         <Fingerprint size={32} />
                     </div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2">YSA Summit</h1>
+                    <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2">Summit</h1>
                     <p className="text-sm font-medium text-slate-500 text-center">Enter your unique 6-digit access code to view your itinerary, food pass, and housing.</p>
                 </div>
 

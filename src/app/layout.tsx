@@ -14,8 +14,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "YSA Summit Participant Companion",
-  description: "Official mobile companion software for the YSA Summit.",
+  title: "Summit Participant Companion",
+  description: "Official mobile companion software for the Summit.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

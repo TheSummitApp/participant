@@ -8,7 +8,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('push', (event) => {
     const data = event.data ? event.data.json() : {};
-    const title = data.title || "YSA Summit";
+    const title = data.title || "Summit";
     const options = {
         body: data.body || "You have a new notification!",
         icon: '/icon-192.png',

@@ -141,7 +141,7 @@ export default function ParticipantProfile() {
                 className="w-full py-4 bg-rose-50 dark:bg-rose-900/10 text-rose-600 dark:text-rose-400 font-bold rounded-[2rem] border border-rose-200 dark:border-rose-900/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-rose-100 dark:hover:bg-rose-900/20"
             >
                 <LogOut size={20} />
-                Log Out of YSA Guide
+                Log Out of Summit
             </button>
         </div>
     );
