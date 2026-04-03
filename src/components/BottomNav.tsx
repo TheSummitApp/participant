@@ -29,7 +29,8 @@ export default function BottomNav() {
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-safe">
             <nav className="flex items-center justify-around h-16 max-w-lg mx-auto px-2 relative">
                 {navItems.map((item) => {
-                    const isActive = pathname === item.href || (pathname === '/' && item.href === '/itinerary');
+                    console.log(pathname, item.href);
+                    const isActive = pathname === item.href;
 
                     if (item.isCenter) {
                         return (

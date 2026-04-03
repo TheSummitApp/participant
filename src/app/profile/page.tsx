@@ -7,7 +7,7 @@ import QRCode from "react-qr-code";
 
 export default function ParticipantProfile() {
     const router = useRouter();
-    const [user, setUser] = useState<{ first_name: string; last_name: string; stake: string; token: string; lodging_name?: string; lodging_room?: string; bed_label?: string; email: string; gender?: string; status: string } | null>(null);
+    const [user, setUser] = useState<{ id: string; first_name: string; last_name: string; stake: string; token: string; lodging_name?: string; lodging_room?: string; bed_label?: string; email: string; gender?: string; status: string } | null>(null);
     const [loading, setLoading] = useState(true);
 
     const handleLogout = () => {
@@ -69,7 +69,7 @@ export default function ParticipantProfile() {
                 <div className="w-full flex justify-center p-6 bg-white rounded-[1.5rem] border border-slate-100 shadow-sm mx-auto">
                     {/* The QR Code that an admin could scan to verify the participant */}
                     <QRCode
-                        value={user.token}
+                        value={`${process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3000'}/participants/${user.id}`}
                         size={180}
                         bgColor="#ffffff"
                         fgColor="#002855"

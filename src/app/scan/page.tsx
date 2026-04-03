@@ -2,7 +2,10 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Loader2, Camera, X, AlertCircle, Utensils, CheckCircle2, Star, Send } from "lucide-react";
-import { Scanner } from '@yudiel/react-qr-scanner';
+import dynamic from "next/dynamic";
+const Scanner = dynamic(() => import("@yudiel/react-qr-scanner").then((mod) => mod.Scanner), {
+    ssr: false,
+});
 
 export default function ParticipantScan() {
     const [token, setToken] = useState<string | null>(null);

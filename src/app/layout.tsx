@@ -50,7 +50,7 @@ export default function RootLayout({
             <FloatingNotes />
 
             {/* Main Content Area */}
-            <main className="flex-1 w-full max-w-lg mx-auto relative">{children}</main>
+            <main className="flex-1 w-full max-w-lg mx-auto relative pt-16">{children}</main>
 
             {/* Sticky PWA Mobile Navigation */}
             <BottomNav />
