@@ -6,6 +6,8 @@ import FloatingNotes from "@/components/FloatingNotes";
 import AuthGuard from "@/components/AuthGuard";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PwaPrompt from "@/components/PwaPrompt";
+import Prefetcher from "@/lib/Prefetcher";
+import OfflineIndicator from "@/components/OfflineIndicator";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -46,6 +48,12 @@ export default function RootLayout({
       <body className="antialiased font-sans flex flex-col min-h-screen bg-background text-foreground pb-20 pt-safe">
         <ThemeProvider>
           <AuthGuard>
+            {/* Global network status indicator */}
+            <OfflineIndicator />
+
+            {/* Silent background data prefetcher */}
+            <Prefetcher />
+
             {/* Floating Action Button */}
             <FloatingNotes />
 

@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import api from "@/lib/api";
+import { useCache } from "@/lib/useCache";
+import { setCache } from "@/lib/cache";
 import { Loader2, StickyNote, Plus, Trash2, Edit3, Save, ChevronLeft } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -13,9 +15,28 @@ interface Note {
 
 export default function ParticipantNotes() {
     const { theme } = useTheme();
+    const { data: profile } = useCache("profile", () =>
+        api.get("/participants/profile").then((r) => r.data)
+    );
+
+    const {
+        data: notesData,
+        loading,
+        refresh: refreshNotes,
+    } = useCache<Note[]>(
+        "notes",
+        () => {
+            if (!profile?.id) return Promise.resolve([]);
+            return api.get(`/notes?participant_id=${profile.id}`).then((r) => r.data);
+        },
+        { enabled: !!profile?.id }
+    );
+
     const [notes, setNotes] = useState<Note[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [profile, setProfile] = useState<{ id: string;[key: string]: unknown } | null>(null);
+
+    useEffect(() => {
+        if (notesData) setNotes(notesData);
+    }, [notesData]);
 
     const [activeNote, setActiveNote] = useState<Note | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -27,52 +48,54 @@ export default function ParticipantNotes() {
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    useEffect(() => {
-        const fetchNotes = async () => {
-            try {
-                const profileRes = await api.get('/participants/profile');
-                setProfile(profileRes.data);
-
-                const res = await api.get(`/notes?participant_id=${profileRes.data.id}`);
-                setNotes(res.data);
-            } catch (err) {
-                console.error("Failed to load notes", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchNotes();
-    }, []);
-
     const handleCreateNew = () => {
         setActiveNote(null);
         setTitle("");
         setContent("");
         setIsEditing(true);
-        // Focus textarea after a tiny delay
         setTimeout(() => textareaRef.current?.focus(), 100);
     };
 
     const handleSave = async () => {
         if (!content.trim()) return;
 
+        const tempId = Date.now().toString();
+        const optimisticNote: Note = {
+            id: tempId,
+            title,
+            content,
+            updated_at: new Date().toISOString()
+        };
+
+        const previousNotes = [...notes];
+        
+        if (activeNote) {
+            setNotes(notes.map(n => n.id === activeNote.id ? optimisticNote : n));
+            setActiveNote(optimisticNote);
+        } else {
+            setNotes([optimisticNote, ...notes]);
+            setActiveNote(optimisticNote);
+        }
+
+        setIsEditing(false);
         setSaving(true);
+        
         try {
             if (activeNote) {
-                // Update
                 const res = await api.put(`/notes/${activeNote.id}`, { title, content });
-                setNotes(notes.map(n => n.id === activeNote.id ? res.data : n));
-                setActiveNote(res.data);
+                const updatedNotes = previousNotes.map(n => n.id === activeNote.id ? res.data : n);
+                setNotes(updatedNotes);
+                setCache('notes', updatedNotes);
             } else {
-                // Create
                 const res = await api.post('/notes', { participant_id: profile?.id, title, content });
-                setNotes([res.data, ...notes]);
-                setActiveNote(res.data);
+                const updatedNotes = [res.data, ...previousNotes];
+                setNotes(updatedNotes);
+                setCache('notes', updatedNotes);
             }
-            setIsEditing(false);
         } catch (err) {
             console.error("Failed to save note:", err);
+            setNotes(previousNotes); 
+            alert("Connection lost. Note could not be saved to server.");
         } finally {
             setSaving(false);
         }
@@ -81,15 +104,19 @@ export default function ParticipantNotes() {
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this note?")) return;
 
+        const previousNotes = [...notes];
+        setNotes(notes.filter(n => n.id !== id));
+        if (activeNote?.id === id) {
+            setActiveNote(null);
+            setIsEditing(false);
+        }
+
         try {
             await api.delete(`/notes/${id}`);
-            setNotes(notes.filter(n => n.id !== id));
-            if (activeNote?.id === id) {
-                setActiveNote(null);
-                setIsEditing(false);
-            }
+            setCache('notes', previousNotes.filter(n => n.id !== id));
         } catch (err) {
             console.error("Failed to delete note:", err);
+            setNotes(previousNotes); 
         }
     };
 
@@ -100,7 +127,7 @@ export default function ParticipantNotes() {
         setIsEditing(false);
     };
 
-    if (loading) {
+    if (loading && notes.length === 0) {
         return (
             <div className="flex h-[80vh] items-center justify-center">
                 <Loader2 className="w-8 h-8 text-amber-500 animate-spin" strokeWidth={2} />
@@ -109,7 +136,6 @@ export default function ParticipantNotes() {
     }
 
     if (activeNote || isEditing) {
-        // Detailed View / Edit View
         return (
             <div className="flex flex-col h-screen fixed inset-0 z-[100] bg-background">
                 <header className="flex items-center justify-between p-4 border-b border-border bg-card/80 backdrop-blur-md pt-top-safe">

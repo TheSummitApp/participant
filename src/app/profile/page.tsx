@@ -2,33 +2,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import api from "@/lib/api";
+import { useCache } from "@/lib/useCache";
 import { User as UserIcon, MapPin, Loader2, Link as LinkIcon, Home, CheckCircle2, LogOut } from "lucide-react";
 import QRCode from "react-qr-code";
 
 export default function ParticipantProfile() {
     const router = useRouter();
-    const [user, setUser] = useState<{ id: string; first_name: string; last_name: string; stake: string; token: string; lodging_name?: string; lodging_room?: string; bed_label?: string; email: string; gender?: string; status: string } | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { data: user, loading } = useCache("profile", () =>
+        api.get("/participants/profile").then((res) => res.data)
+    );
 
     const handleLogout = () => {
         localStorage.removeItem('summit_participant_token');
         router.push('/login');
     };
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const res = await api.get('/participants/profile');
-                setUser(res.data);
-            } catch (err) {
-                console.error("Failed to load profile", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProfile();
-    }, []);
 
     if (loading) {
         return (

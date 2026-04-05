@@ -3,73 +3,70 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
+import { useCache } from "@/lib/useCache";
+import { DashboardSkeleton } from "@/components/Skeleton";
 import { Calendar, Utensils, Home as HomeIcon, MapPin, User, Sunrise, Moon, CloudSun, LogOut, Clock } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 
 export default function ParticipantDashboard() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [user, setUser] = useState<{ first_name: string; stake: string; lodging_room?: string; company_name?: string; lodging_name?: string; bed_label?: string; summit_id?: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [currentEvent, setCurrentEvent] = useState<{ title: string; location: string; start_time: string; end_time: string } | null>(null);
+
+  const { data: user, loading: userLoading } = useCache("profile", () =>
+    api.get("/participants/profile").then((res) => res.data)
+  );
+
+  const { data: itineraryData, loading: itineraryLoading } = useCache(
+    "itinerary",
+    () => {
+      if (!user?.summit_id) return Promise.resolve([]);
+      return api.get(`/itinerary/${user.summit_id}`).then((res) => res.data);
+    },
+    { enabled: !!user?.summit_id }
+  );
+
+  const [currentEvent, setCurrentEvent] = useState<{
+    title: string;
+    location: string;
+    start_time: string;
+    end_time: string;
+    isUpcoming?: boolean;
+  } | null>(null);
 
   useEffect(() => {
-    const fetchProfileAndItinerary = async () => {
-      try {
-        const res = await api.get('/participants/profile');
-        const userData = res.data;
-        setUser(userData);
+    if (itineraryData) {
+      const items = itineraryData || [];
+      const now = new Date();
+      const active = items.find((item: any) => {
+        const start = new Date(item.start_time);
+        const end = new Date(item.end_time);
+        return now >= start && now <= end;
+      });
 
-        if (userData.summit_id) {
-          const itineraryRes = await api.get(`/itinerary/${userData.summit_id}`);
-          const items = itineraryRes.data || [];
-
-          const now = new Date();
-          const active = items.find((item: any) => {
-            const start = new Date(item.start_time);
-            const end = new Date(item.end_time);
-            return now >= start && now <= end;
-          });
-
-          if (active) {
-            setCurrentEvent(active);
-          } else {
-            // Find next upcoming if nothing is happening now
-            const next = items
-              .filter((item: any) => new Date(item.start_time) > now)
-              .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())[0];
-            if (next) setCurrentEvent({ ...next, isUpcoming: true });
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        localStorage.removeItem("summit_participant_token");
-        router.push("/login");
-      } finally {
-        setLoading(false);
+      if (active) {
+        setCurrentEvent(active);
+      } else {
+        // Find next upcoming if nothing is happening now
+        const next = items
+          .filter((item: any) => new Date(item.start_time) > now)
+          .sort(
+            (a: any, b: any) =>
+              new Date(a.start_time).getTime() -
+              new Date(b.start_time).getTime()
+          )[0];
+        if (next) setCurrentEvent({ ...next, isUpcoming: true });
       }
-    };
-
-    const token = localStorage.getItem("summit_participant_token");
-    if (!token) {
-      router.push("/login");
-    } else {
-      fetchProfileAndItinerary();
     }
-  }, [router]);
+  }, [itineraryData]);
 
   const handleLogout = () => {
     localStorage.removeItem("summit_participant_token");
     router.push("/login");
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  const loading = userLoading || (user?.summit_id && itineraryLoading);
+
+  if (loading) return <DashboardSkeleton />;
 
   if (!user) return null;
 
@@ -117,7 +114,7 @@ export default function ParticipantDashboard() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl pointer-events-none" />
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-2 w-2 rounded-full bg-white animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{(currentEvent as any).isUpcoming ? "Up Next" : "Happening Now"}</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{currentEvent.isUpcoming ? "Up Next" : "Happening Now"}</span>
           </div>
           <h2 className="text-xl font-bold mb-2 leading-tight">{currentEvent.title}</h2>
           <div className="flex items-center gap-4 text-xs font-medium text-white/80">

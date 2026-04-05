@@ -37,6 +37,12 @@ export default function ParticipantScan() {
 
     const handleDecode = async (result: string) => {
         if (!result) return;
+        
+        // Haptic Feedback (vibrate for 50ms)
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+
         setScanning(false);
         setLoading(true);
         setError(null);
@@ -68,19 +74,26 @@ export default function ParticipantScan() {
 
     const confirmMeal = async () => {
         if (!scannedVendor || !slotData) return;
-        setLoading(true);
+        
+        // Optimistically show success
+        setSuccess(true);
         setError(null);
+        
+        // Haptic Feedback (longer vibration on success)
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate([100, 50, 100]);
+        }
+        
         try {
             await api.post('/meals/confirm', {
                 participant_token: token,
                 vendor_token: scannedVendor.token,
                 slot_id: slotData.slot_id
             });
-            setSuccess(true);
         } catch (err: unknown) {
+            // If it actually fails, roll back success state and show error
+            setSuccess(false);
             setError((err as { response?: { data?: { error?: string } } }).response?.data?.error || "Failed to confirm meal.");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -161,7 +174,7 @@ export default function ParticipantScan() {
 
             {loading && !scanning && (
                 <div className="flex-1 flex items-center justify-center">
-                    <Loader2 className="w-12 h-12 text-primary animate-spin" strokeWidth={3} />
+                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                 </div>
             )}
 

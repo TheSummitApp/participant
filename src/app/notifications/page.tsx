@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { useCache } from "@/lib/useCache";
 import { Bell, Loader2, Megaphone } from "lucide-react";
 
 interface Announcement {
@@ -10,28 +11,22 @@ interface Announcement {
 }
 
 export default function ParticipantNotifications() {
-    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: profile } = useCache("profile", () =>
+        api.get("/participants/profile").then((r) => r.data)
+    );
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const profileRes = await api.get('/participants/profile');
-            const summitId = profileRes.data.summit_id;
+    const { data: announcementsData, loading } = useCache(
+        "announcements",
+        () => {
+            if (!profile?.summit_id) return Promise.resolve([]);
+            return api
+                .get(`/announcements/${profile.summit_id}`)
+                .then((r) => r.data);
+        },
+        { enabled: !!profile?.summit_id }
+    );
 
-            const annRes = await api.get(`/announcements/${summitId}`);
-
-            setAnnouncements(annRes.data || []);
-        } catch (err) {
-            console.error("Failed to load notifications", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
+    const announcements = announcementsData || [];
 
     if (loading) {
         return (
@@ -64,7 +59,7 @@ export default function ParticipantNotifications() {
                             <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-1 px-10 leading-relaxed uppercase tracking-widest">No summit-wide announcements yet. Check back later.</p>
                         </div>
                     ) : (
-                        announcements.map((ann) => (
+                        announcements.map((ann: Announcement) => (
                             <div key={ann.id} className="bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-100 dark:border-slate-800 p-6 rounded-[2rem] shadow-sm active:scale-95 transition-all">
                                 <div className="flex items-start gap-4">
                                     <div className="w-10 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center text-slate-400 dark:text-slate-500 shrink-0">

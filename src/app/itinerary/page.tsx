@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { useCache } from "@/lib/useCache";
+import { ListSkeleton } from "@/components/Skeleton";
 import { Calendar, MapPin, Clock, Loader2 } from "lucide-react";
 
 interface ItineraryItem {
@@ -13,43 +15,26 @@ interface ItineraryItem {
 }
 
 export default function ParticipantItinerary() {
-    const [items, setItems] = useState<ItineraryItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data: profile } = useCache("profile", () =>
+        api.get("/participants/profile").then((r) => r.data)
+    );
 
-    useEffect(() => {
-        const fetchItinerary = async () => {
-            try {
-                // The summit_id should be fetched, or we just grab all for the summit they belong to.
-                // In a robust implementation, the backend gets the participant's summit_id from their token
-                // Currently, we'll fetch profile first to get summit_id, then fetch itinerary
+    const {
+        data: items,
+        loading,
+        error: fetchError,
+    } = useCache<ItineraryItem[]>(
+        "itinerary",
+        () => {
+            if (!profile?.summit_id) return Promise.resolve([]);
+            return api.get(`/itinerary/${profile.summit_id}`).then((r) => r.data);
+        },
+        { enabled: !!profile?.summit_id }
+    );
 
-                const profileRes = await api.get('/participants/profile');
-                const summitId = profileRes.data.summit_id;
+    const error = fetchError ? "Failed to load itinerary. Please try again." : null;
 
-                await api.get(`/summits/${summitId}`); // The backend might have /summits/:id/itinerary? Actually I need to check where itinerary routes are!
-
-                // For now, let's fetch all itinerary items for that summit.
-                const itineraryRes = await api.get(`/itinerary/${summitId}`);
-                setItems(itineraryRes.data || []);
-            } catch (err) {
-                console.error(err);
-                setError("Failed to load itinerary. Please try again.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchItinerary();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="flex h-[80vh] items-center justify-center">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" strokeWidth={2} />
-            </div>
-        );
-    }
+    if (loading) return <ListSkeleton />;
 
     if (error) {
         return (
@@ -60,7 +45,7 @@ export default function ParticipantItinerary() {
     }
 
     // Group items by date
-    const groupedItems = items.reduce((acc, item) => {
+    const groupedItems = (items || []).reduce((acc: Record<string, ItineraryItem[]>, item: ItineraryItem) => {
         const dateStr = new Date(item.start_time).toLocaleDateString('en-US', {
             weekday: 'long', month: 'long', day: 'numeric'
         });
