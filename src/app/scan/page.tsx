@@ -158,12 +158,12 @@ export default function ParticipantScan() {
                     <div className="absolute top-0 w-full flex justify-end z-10 px-4">
                         <button
                             onClick={() => setScanning(false)}
-                            className="w-12 h-12 bg-white/20 backdrop-blur-xl rounded-full text-foreground border border-white/30 flex items-center justify-center active:scale-90 transition-transform shadow-lg"
+                            className="w-12 h-12 bg-white/20 dark:bg-black/20 backdrop-blur-xl rounded-full text-foreground border border-white/30 dark:border-white/10 flex items-center justify-center active:scale-90 transition-transform shadow-lg"
                         >
                             <X size={24} />
                         </button>
                     </div>
-                    <div className="w-full max-w-sm aspect-square bg-slate-100 rounded-[3rem] overflow-hidden shadow-2xl relative border-4 border-primary/10">
+                    <div className="w-full max-w-sm aspect-square bg-slate-100 dark:bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl relative border-4 border-primary/10 dark:border-primary/20">
                         <Scanner
                             onScan={(result) => handleDecode(result[0].rawValue)}
                         />
@@ -180,16 +180,16 @@ export default function ParticipantScan() {
 
             {error && (
                 <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 px-4 animate-in zoom-in-95 duration-300">
-                    <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-[2rem] border-2 border-rose-100 flex items-center justify-center shadow-lg shadow-rose-200">
+                    <div className="w-20 h-20 bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-[2rem] border-2 border-rose-100 dark:border-rose-500/20 flex items-center justify-center shadow-lg shadow-rose-200 dark:shadow-none">
                         <AlertCircle size={40} />
                     </div>
                     <div>
-                        <h3 className="font-black text-2xl text-rose-600 tracking-tight">{error}</h3>
+                        <h3 className="font-black text-2xl text-rose-600 dark:text-rose-500 tracking-tight">{error}</h3>
                         <p className="text-sm font-medium text-muted-foreground mt-2 max-w-[250px] mx-auto">Please check with an administrator if you believe this is an error.</p>
                     </div>
                     <button
                         onClick={() => { setError(null); setScanning(true); }}
-                        className="bg-slate-900 text-white font-black px-10 py-5 rounded-3xl active:scale-95 transition-all text-xs uppercase tracking-widest"
+                        className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-black px-10 py-5 rounded-3xl active:scale-95 transition-all text-xs uppercase tracking-widest"
                     >
                         Try Scanning Again
                     </button>
@@ -198,7 +198,7 @@ export default function ParticipantScan() {
 
             {scannedVendor && !success && !error && (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-8 px-2 animate-in slide-in-from-bottom-8 duration-500">
-                    <div className="bg-white border-2 border-slate-100 shadow-2xl rounded-[3rem] p-8 w-full max-w-sm text-center relative overflow-hidden group">
+                    <div className="bg-card border-2 border-border shadow-2xl rounded-[3rem] p-8 w-full max-w-sm text-center relative overflow-hidden group dark:shadow-none">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -translate-y-12 translate-x-12 blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors" />
 
                         <div className="w-20 h-20 bg-primary text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary/30">
@@ -206,23 +206,23 @@ export default function ParticipantScan() {
                         </div>
 
                         <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 leading-none">{scannedVendor.name}</p>
-                        <h2 className="text-3xl font-black text-slate-900 mb-8 tracking-tighter">{slotData?.meal_name || "Food Listing"}</h2>
+                        <h2 className="text-3xl font-black text-card-foreground mb-8 tracking-tighter">{slotData?.meal_name || "Food Listing"}</h2>
 
-                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 inline-block w-full mb-10 text-left">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Active Assignment</span>
-                            <span className="font-black text-slate-900 text-xl tracking-tight">{slotData?.meal_type}</span>
+                        <div className="bg-muted p-6 rounded-2xl border border-border inline-block w-full mb-10 text-left">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1.5">Active Assignment</span>
+                            <span className="font-black text-foreground text-xl tracking-tight">{slotData?.meal_type}</span>
                         </div>
 
                         <div className="flex gap-4 w-full">
                             <button
                                 onClick={() => setScannedVendor(null)}
-                                className="flex-1 py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-400 bg-slate-50 hover:bg-slate-100 transition-colors"
+                                className="flex-1 py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest text-muted-foreground bg-muted hover:bg-muted/80 transition-colors"
                             >
                                 Back
                             </button>
                             <button
                                 onClick={confirmMeal}
-                                className="flex-[2] py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-primary hover:bg-[#002855] shadow-lg shadow-primary/20 transition-all active:scale-95 translate-y-0"
+                                className="flex-[2] py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest text-primary-foreground bg-primary shadow-lg shadow-primary/20 transition-all active:scale-95 translate-y-0"
                             >
                                 Claim Meal
                             </button>
@@ -234,13 +234,13 @@ export default function ParticipantScan() {
             {success && (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-8 px-4 animate-in fade-in duration-500">
                    {!ratingSubmitted ? (
-                        <div className="bg-white border-2 border-emerald-100 shadow-2xl rounded-[3rem] p-8 w-full max-w-sm text-center animate-in zoom-in-95 duration-300">
+                        <div className="bg-card border-2 border-emerald-100 dark:border-emerald-500/20 shadow-2xl dark:shadow-none rounded-[3rem] p-8 w-full max-w-sm text-center animate-in zoom-in-95 duration-300">
                             <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/20 mx-auto mb-6">
                                 <CheckCircle2 size={40} className="text-white" strokeWidth={3} />
                             </div>
                             
-                            <h2 className="text-3xl font-black text-emerald-600 tracking-tight mb-2">Success!</h2>
-                            <p className="font-bold text-slate-400 text-sm mb-10">Meal logged. How was it?</p>
+                            <h2 className="text-3xl font-black text-emerald-600 dark:text-emerald-500 tracking-tight mb-2">Success!</h2>
+                            <p className="font-bold text-muted-foreground text-sm mb-10">Meal logged. How was it?</p>
                             
                             <div className="flex justify-center gap-3 mb-8">
                                 {[1, 2, 3, 4, 5].map((star) => (
@@ -251,7 +251,7 @@ export default function ParticipantScan() {
                                     >
                                         <Star 
                                             size={36} 
-                                            className={star <= rating ? "fill-amber-400 text-amber-400" : "text-slate-200"} 
+                                            className={star <= rating ? "fill-amber-400 text-amber-400" : "text-slate-200 dark:text-slate-700"} 
                                             strokeWidth={star <= rating ? 0 : 2}
                                         />
                                     </button>
@@ -260,7 +260,7 @@ export default function ParticipantScan() {
                             
                             <textarea 
                                 placeholder="Any feedback for the vendor? (Optional)"
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-all resize-none mb-6"
+                                className="w-full p-4 bg-muted border border-border text-foreground placeholder:text-muted-foreground rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-all resize-none mb-6"
                                 rows={3}
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
@@ -270,13 +270,13 @@ export default function ParticipantScan() {
                                 <button
                                     disabled={rating === 0 || submittingRating}
                                     onClick={submitRating}
-                                    className="w-full py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-30 flex items-center justify-center gap-2"
+                                    className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-30 flex items-center justify-center gap-2"
                                 >
                                     {submittingRating ? <Loader2 size={18} className="animate-spin" /> : <>Share Feedback <Send size={14} /></>}
                                 </button>
                                 <button
                                     onClick={resetView}
-                                    className="w-full py-4 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
+                                    className="w-full py-4 text-muted-foreground font-bold text-sm hover:text-foreground transition-colors"
                                 >
                                     Maybe later
                                 </button>
@@ -288,12 +288,12 @@ export default function ParticipantScan() {
                                 <Star size={48} className="text-white fill-white" />
                              </div>
                              <div>
-                                <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Thank You!</h2>
-                                <p className="font-bold text-slate-400 mt-2">Your rating helps us improve the summit experience.</p>
+                                <h2 className="text-3xl font-black text-foreground tracking-tighter">Thank You!</h2>
+                                <p className="font-bold text-muted-foreground mt-2">Your rating helps us improve the summit experience.</p>
                              </div>
                              <button
                                 onClick={resetView}
-                                className="bg-slate-900 text-white font-black px-12 py-5 rounded-3xl active:scale-95 transition-transform w-full max-w-[250px] uppercase text-xs tracking-widest shadow-xl"
+                                className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black px-12 py-5 rounded-3xl active:scale-95 transition-transform w-full max-w-[250px] uppercase text-xs tracking-widest shadow-xl"
                             >
                                 Back to Dashboard
                             </button>
