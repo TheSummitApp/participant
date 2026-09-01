@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "@/lib/api";
 import { Loader2, Camera, X, AlertCircle, Utensils, CheckCircle2, Star, Send } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -15,6 +15,10 @@ export default function ParticipantScan() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [scannerKey, setScannerKey] = useState(0); // incremented on reset to remount Scanner
+
+    // Ref-based lock — prevents duplicate fires from the QR camera before state settles
+    const scanLockRef = useRef(false);
 
     // Rating State
     const [rating, setRating] = useState(0);
@@ -35,9 +39,11 @@ export default function ParticipantScan() {
         }
     }, []);
 
+
     const handleDecode = async (result: string) => {
-        if (!result) return;
-        
+        if (!result || scanLockRef.current) return;
+        scanLockRef.current = true; // lock — prevents duplicate fires from camera frames
+
         // Haptic Feedback (vibrate for 50ms)
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
             navigator.vibrate(50);
@@ -67,6 +73,7 @@ export default function ParticipantScan() {
             setSlotData(res.data.slot);
         } catch (err: unknown) {
             setError((err as { response?: { data?: { error?: string } } }).response?.data?.error || "Error reading vendor pass.");
+            scanLockRef.current = false; // release on error so participant can retry
         } finally {
             setLoading(false);
         }
@@ -121,6 +128,9 @@ export default function ParticipantScan() {
         setRating(0);
         setComment("");
         setRatingSubmitted(false);
+        // Release lock and remount Scanner so the same vendor QR can be re-scanned
+        scanLockRef.current = false;
+        setScannerKey(k => k + 1);
     };
 
     return (
@@ -165,6 +175,7 @@ export default function ParticipantScan() {
                     </div>
                     <div className="w-full max-w-sm aspect-square bg-slate-100 dark:bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl relative border-4 border-primary/10 dark:border-primary/20">
                         <Scanner
+                            key={scannerKey}
                             onScan={(result) => handleDecode(result[0].rawValue)}
                         />
                         <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-0.5 bg-primary/50 blur-[2px] animate-pulse"></div>
