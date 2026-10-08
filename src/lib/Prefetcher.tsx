@@ -81,5 +81,38 @@ export default function Prefetcher() {
         return () => clearTimeout(timer);
     }, [pathname]);
 
+    // Active Login / Heartbeat Tracker: keeps last_active_at fresh while app is open & visible
+    useEffect(() => {
+        const publicRoutes = ['/login', '/auto-login', '/v'];
+        if (publicRoutes.some(r => pathname.startsWith(r))) return;
+
+        const token = typeof window !== 'undefined' ? localStorage.getItem('summit_participant_token') : null;
+        if (!token) return;
+
+        const sendHeartbeat = () => {
+            if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+                api.post('/participants/heartbeat').catch(() => {});
+            }
+        };
+
+        // Send immediately on route load
+        sendHeartbeat();
+
+        // Send every 2.5 minutes (150s)
+        const interval = setInterval(sendHeartbeat, 150000);
+
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                sendHeartbeat();
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+        };
+    }, [pathname]);
+
     return null; // renders nothing
 }
