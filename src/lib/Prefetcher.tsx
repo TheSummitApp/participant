@@ -61,6 +61,15 @@ export default function Prefetcher() {
                     );
                 }
 
+                // Food Slots / Meal Timetable
+                if (summitId && isCacheStale(getCached('food_slots'))) {
+                    promises.push(
+                        api.get(`/food-slots/${summitId}`)
+                            .then(r => setCache('food_slots', r.data))
+                            .catch(() => { /* silent */ })
+                    );
+                }
+
                 // Notes
                 if (participantId && isCacheStale(getCached('notes'))) {
                     promises.push(

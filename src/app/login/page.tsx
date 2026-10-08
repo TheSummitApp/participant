@@ -12,14 +12,15 @@ export default function ParticipantLogin() {
         e.preventDefault();
         setError("");
 
-        if (!code || code.length < 5) {
+        const cleanCode = code.trim();
+        if (!cleanCode || cleanCode.length < 5) {
             setError("Please enter a valid login code.");
             return;
         }
 
         try {
             setLoading(true);
-            const res = await api.get(`/participants/identifier/${code}`);
+            const res = await api.get(`/participants/identifier/${encodeURIComponent(cleanCode)}`);
             if (res.data && res.data.token) {
                 localStorage.setItem("summit_participant_token", res.data.token);
                 window.location.href = "/";

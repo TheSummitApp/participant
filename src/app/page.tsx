@@ -5,7 +5,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { useCache } from "@/lib/useCache";
 import { DashboardSkeleton } from "@/components/Skeleton";
-import { Calendar, Utensils, Home as HomeIcon, MapPin, User, Sunrise, Moon, CloudSun, LogOut, Clock } from "lucide-react";
+import { Calendar, UtensilsCrossed, ScanLine, Home as HomeIcon, MapPin, User, Sunrise, Moon, CloudSun, LogOut, Clock } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 
 export default function ParticipantDashboard() {
@@ -131,33 +131,44 @@ export default function ParticipantDashboard() {
       )}
 
       <div className="grid grid-cols-2 gap-4">
-        <Link href="/itinerary" className="bg-blue-500 text-white p-6 rounded-[2rem] flex flex-col justify-between shadow-lg shadow-blue-500/20 active:scale-95 transition-transform aspect-square relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl pointer-events-none" />
-          <Calendar size={32} strokeWidth={2.5} className="mb-4" />
+        {/* Itinerary */}
+        <Link href="/itinerary" className="bg-blue-600 text-white p-5 rounded-[2rem] flex flex-col justify-between shadow-lg shadow-blue-600/20 active:scale-95 transition-transform aspect-square relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full -translate-y-6 translate-x-6 blur-2xl pointer-events-none" />
+          <Calendar size={28} strokeWidth={2.5} className="mb-4" />
           <div>
             <h3 className="font-bold text-lg leading-tight">Itinerary</h3>
-            <p className="text-blue-100 text-xs font-medium mt-1">Today&apos;s Schedule</p>
+            <p className="text-blue-100 text-xs font-medium mt-1">Official Schedule</p>
           </div>
         </Link>
 
-        <div className="flex flex-col gap-4">
-          <Link href="/scan" className="bg-emerald-500 text-white p-6 rounded-[2rem] flex-1 flex flex-col justify-between shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-4 translate-x-4 blur-xl pointer-events-none" />
-            <Utensils size={24} strokeWidth={2.5} />
-            <div>
-              <h3 className="font-bold leading-tight">Meals</h3>
-              <p className="text-emerald-100 text-[10px] font-medium mt-1">Scan for food</p>
-            </div>
-          </Link>
+        {/* Meal Timetable */}
+        <Link href="/meals" className="bg-amber-600 text-white p-5 rounded-[2rem] flex flex-col justify-between shadow-lg shadow-amber-600/20 active:scale-95 transition-transform aspect-square relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full -translate-y-6 translate-x-6 blur-2xl pointer-events-none" />
+          <UtensilsCrossed size={28} strokeWidth={2.5} className="mb-4" />
+          <div>
+            <h3 className="font-bold text-lg leading-tight">Meal Timetable</h3>
+            <p className="text-amber-100 text-xs font-medium mt-1">Menus & Times</p>
+          </div>
+        </Link>
 
-          <Link href="/profile" className="bg-card text-card-foreground p-6 rounded-[2rem] border border-border flex-1 flex flex-col justify-between shadow-sm active:scale-95 transition-transform relative overflow-hidden">
-            <HomeIcon size={24} strokeWidth={2.5} className="text-amber-500" />
-            <div>
-              <h3 className="font-bold leading-tight">Housing</h3>
-              <p className="text-muted-foreground text-[10px] font-medium mt-1">Room {user.lodging_room || "TBA"}</p>
-            </div>
-          </Link>
-        </div>
+        {/* Scan Food Pass */}
+        <Link href="/scan" className="bg-emerald-600 text-white p-5 rounded-[2rem] flex flex-col justify-between shadow-lg shadow-emerald-600/20 active:scale-95 transition-transform aspect-square relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full -translate-y-6 translate-x-6 blur-2xl pointer-events-none" />
+          <ScanLine size={28} strokeWidth={2.5} className="mb-4" />
+          <div>
+            <h3 className="font-bold text-lg leading-tight">Food Pass</h3>
+            <p className="text-emerald-100 text-xs font-medium mt-1">Scan to Redeem</p>
+          </div>
+        </Link>
+
+        {/* Housing */}
+        <Link href="/profile" className="bg-card text-card-foreground p-5 rounded-[2rem] border border-border flex flex-col justify-between shadow-sm active:scale-95 transition-transform aspect-square relative overflow-hidden">
+          <HomeIcon size={28} strokeWidth={2.5} className="text-amber-500 mb-4" />
+          <div>
+            <h3 className="font-bold text-lg leading-tight">Housing</h3>
+            <p className="text-muted-foreground text-xs font-medium mt-1">Room {user.lodging_room || "TBA"}</p>
+          </div>
+        </Link>
       </div>
 
       <div className="bg-card border border-border rounded-[2rem] p-6 shadow-sm">
