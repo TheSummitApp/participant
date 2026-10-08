@@ -5,7 +5,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { useCache } from "@/lib/useCache";
 import { DashboardSkeleton } from "@/components/Skeleton";
-import { Calendar, UtensilsCrossed, ScanLine, Home as HomeIcon, MapPin, User, Sunrise, Moon, CloudSun, LogOut, Clock } from "lucide-react";
+import { Calendar, UtensilsCrossed, ScanLine, QrCode, Home as HomeIcon, MapPin, User, Sunrise, Moon, CloudSun, LogOut, Clock } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 
 export default function ParticipantDashboard() {
@@ -151,13 +151,13 @@ export default function ParticipantDashboard() {
           </div>
         </Link>
 
-        {/* Scan Food Pass */}
+        {/* Food Pass (Show QR / Scan) */}
         <Link href="/scan" className="bg-emerald-600 text-white p-5 rounded-[2rem] flex flex-col justify-between shadow-lg shadow-emerald-600/20 active:scale-95 transition-transform aspect-square relative overflow-hidden">
           <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full -translate-y-6 translate-x-6 blur-2xl pointer-events-none" />
-          <ScanLine size={28} strokeWidth={2.5} className="mb-4" />
+          <QrCode size={28} strokeWidth={2.5} className="mb-4" />
           <div>
             <h3 className="font-bold text-lg leading-tight">Food Pass</h3>
-            <p className="text-emerald-100 text-xs font-medium mt-1">Scan to Redeem</p>
+            <p className="text-emerald-100 text-xs font-medium mt-1">Show QR or Scan</p>
           </div>
         </Link>
 

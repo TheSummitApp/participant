@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
 const navItems = [
     { label: 'Home', href: '/', icon: HomeIcon },
     { label: 'Itinerary', href: '/itinerary', icon: Calendar },
-    { label: 'Scan', href: '/scan', icon: ScanLine, isCenter: true },
+    { label: 'Food Pass', href: '/scan', icon: ScanLine, isCenter: true },
     { label: 'Alerts', href: '/notifications', icon: Bell },
     { label: 'Profile', href: '/profile', icon: User },
 ];

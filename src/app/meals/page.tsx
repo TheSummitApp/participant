@@ -12,6 +12,7 @@ import {
     Calendar,
     ChevronLeft,
     ScanLine,
+    QrCode,
     Sunrise,
     Sun,
     Moon,
@@ -286,12 +287,17 @@ export default function MealTimetablePage() {
                         <p className="text-xs text-emerald-100 font-medium mb-4">Meal window is open. Ready for redemption.</p>
                     )}
 
-                    <Link
-                        href="/scan"
-                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider bg-white text-emerald-800 px-5 py-2.5 rounded-full shadow hover:bg-emerald-50 active:scale-95 transition-all"
-                    >
-                        <ScanLine size={16} /> Scan Food Pass
-                    </Link>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
+                        <Link
+                            href="/scan"
+                            className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider bg-white text-emerald-800 px-5 py-2.5 rounded-full shadow hover:bg-emerald-50 active:scale-95 transition-all"
+                        >
+                            <QrCode size={16} /> Open Food Pass
+                        </Link>
+                        <span className="text-[11px] text-emerald-100 font-medium">
+                            Show your QR to vendor or scan their placard
+                        </span>
+                    </div>
                 </div>
             ) : upcomingSlot ? (
                 <div className="bg-card border border-border p-5 rounded-[2rem] shadow-sm flex items-center justify-between gap-4">
