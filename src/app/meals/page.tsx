@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import { useCache } from "@/lib/useCache";
@@ -205,7 +205,12 @@ export default function MealTimetablePage() {
         return futureSlots[0] || null;
     }, [slots, activeSlot]);
 
-    if (loading) return <ListSkeleton />;
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted || loading) return <ListSkeleton />;
 
     if (fetchError) {
         return (

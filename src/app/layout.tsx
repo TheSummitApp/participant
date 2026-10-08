@@ -45,7 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <body className="antialiased font-sans flex flex-col min-h-screen bg-background text-foreground pb-20 pt-safe">
+      <body suppressHydrationWarning className="antialiased font-sans flex flex-col min-h-screen bg-background text-foreground pb-20 pt-safe">
         <ThemeProvider>
           <AuthGuard>
             {/* Global network status indicator */}
