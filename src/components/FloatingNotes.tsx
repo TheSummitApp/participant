@@ -37,14 +37,6 @@ export default function FloatingNotes() {
                     <StickyNote size={18} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
                 <span className="text-xs font-bold tracking-tight uppercase">My Notes</span>
-
-                {/* Visual pulse indicator when in active session */}
-                {!isActive && (
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                    </span>
-                )}
             </Link>
         </div>
     );
