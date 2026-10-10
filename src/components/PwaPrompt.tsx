@@ -3,22 +3,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Download, Bell, X } from 'lucide-react';
 
-import api from '@/lib/api';
-
-const VAPID_PUBLIC_KEY = "BNy42jx6OcEDtrpZoqROk2gK_x65mfluhDAh4un53Oty_BOw1hliyJ89BkROxmwmXIEJUtubj1Qa7UAjisIVdQM";
-
-function urlBase64ToUint8Array(base64String: string) {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-
-    for (let i = 0; i < rawData.length; ++i) {
-        outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-}
+import { subscribeToPushNotifications } from '@/lib/push';
 
 export default function PwaPrompt() {
     const pathname = usePathname();
@@ -44,15 +29,24 @@ export default function PwaPrompt() {
 
         // Only show prompts if user is theoretically logged in (not on login page)
         if (!pathname.startsWith('/login') && !pathname.startsWith('/auto-login')) {
+            const hasNotificationSupport = 'Notification' in window && 'PushManager' in window;
+            const notifDefault = hasNotificationSupport && Notification.permission === 'default';
+
             if (!checkStandalone) {
                 // Not installed
-                const dismissed = sessionStorage.getItem("pwa_install_dismissed");
-                if (!dismissed) {
+                const installDismissed = sessionStorage.getItem("pwa_install_dismissed");
+                if (!installDismissed) {
                     setShowInstallPrompt(true);
+                } else if (notifDefault && !isAppleOS) {
+                    // On Android and Desktop, push notifications work directly in the browser even without standalone install
+                    const notifDismissed = sessionStorage.getItem("pwa_notif_dismissed");
+                    if (!notifDismissed) {
+                        setShowNotificationPrompt(true);
+                    }
                 }
             } else {
                 // Is installed, check notifications
-                if ('Notification' in window && Notification.permission === 'default') {
+                if (notifDefault) {
                     const dismissed = sessionStorage.getItem("pwa_notif_dismissed");
                     if (!dismissed) {
                         setShowNotificationPrompt(true);
@@ -89,28 +83,8 @@ export default function PwaPrompt() {
     };
 
     const handleAllowNotifications = async () => {
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                const registration = await navigator.serviceWorker.ready;
-
-                // Subscribe the user
-                const subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-                });
-
-                // Send subscription to backend
-                await api.post('/participants/push-subscribe', subscription);
-
-                setShowNotificationPrompt(false);
-            } else {
-                setShowNotificationPrompt(false);
-            }
-        } catch (err) {
-            console.error("Failed to subscribe to push notifications:", err);
-            setShowNotificationPrompt(false);
-        }
+        await subscribeToPushNotifications();
+        setShowNotificationPrompt(false);
     };
 
     const dismissInstall = () => {
