@@ -43,18 +43,19 @@ export default function VendorDashboard({ params }: { params: Promise<{ token: s
         return () => clearInterval(interval);
     }, [token]);
 
-    const handleActivateMeal = async (mealId: string) => {
+    const handleActivateMeal = async (mealId: string | null) => {
         if (!data) return;
         try {
             const response = await api.post('/vendors/active-meal', {
                 vendor_id: data.vendor.id,
-                meal_id: mealId
+                meal_id: mealId,
+                vendor_token: token
             });
             if (response.data.success) {
                 await fetchDashboardData();
             }
         } catch (error) {
-            console.error("Failed to activate meal:", error);
+            console.error("Failed to update active meal:", error);
         }
     };
 
@@ -160,16 +161,28 @@ export default function VendorDashboard({ params }: { params: Promise<{ token: s
                                             </p>
                                         </div>
 
-                                        <button
-                                            onClick={() => handleActivateMeal(slot.meal_id)}
-                                            disabled={isActive}
-                                            className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${isActive
-                                                ? 'bg-emerald-500 text-white cursor-default'
-                                                : 'bg-[#002855] text-white hover:bg-[#002855]/90 active:scale-95 shadow-md shadow-[#002855]/20'
-                                                }`}
-                                        >
-                                            {isActive ? 'Active' : 'Activate'}
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            {isActive ? (
+                                                <>
+                                                    <span className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg bg-emerald-500 text-white">
+                                                        Active
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleActivateMeal(null)}
+                                                        className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 active:scale-95"
+                                                    >
+                                                        Set Inactive
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleActivateMeal(slot.meal_id)}
+                                                    className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all bg-[#002855] text-white hover:bg-[#002855]/90 active:scale-95 shadow-md shadow-[#002855]/20"
+                                                >
+                                                    Activate
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
